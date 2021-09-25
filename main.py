@@ -47,7 +47,7 @@ screen = pygame.display.set_mode((x_screen, y_screen))
 
 # Set fps
 clock = pygame.time.Clock()
-fps_number = 90
+fps_number = 120
 
 # O(0,0)
 Ox = 0
