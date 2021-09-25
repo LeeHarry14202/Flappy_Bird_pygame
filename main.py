@@ -2,7 +2,7 @@ import pygame
 import sys
 import random
 
-
+# Function
 def draw_floor(x_floor):
     screen.blit(floor, (x_floor, y_floor))
     x_floor = x_floor + x_screen
@@ -38,6 +38,7 @@ def draw_pipe(pipes):
 
 pygame.init()
 
+# Values
 
 # Set screen
 x_screen = 216
