@@ -5,7 +5,7 @@ import random
 
 def draw_floor(x_floor):
     screen.blit(floor, (x_floor, y_floor))
-    x_floor = x_floor + x_screen
+    x_floor = x_floor + SCREEN_WIDTH
     screen.blit(floor, (x_floor, y_floor))
 
 
@@ -27,10 +27,10 @@ def bird_animation():
 
 def create_pipe():
     random_pipe_pos = random.choice(pipe_height)
-    x_pipe = x_screen 
+    x_pipe = SCREEN_WIDTH
     y_pipe = random_pipe_pos
     bottom_pipe = pipe_surface.get_rect(midtop=(x_pipe, y_pipe))
-    top_pipe = pipe_surface.get_rect(midtop=(x_pipe, y_pipe - y_screen))
+    top_pipe = pipe_surface.get_rect(midtop=(x_pipe, y_pipe - SCREEN_HEIGHT))
     return bottom_pipe, top_pipe
 
 
@@ -42,7 +42,7 @@ def move_pipe(pipes):
 
 def draw_pipe(pipes): 
     for pipe in pipes:
-        if pipe.bottom >= y_screen * (9/10):
+        if pipe.bottom >= SCREEN_HEIGHT * (9/10):
             screen.blit(pipe_surface, pipe)
         else:
             # Only flip y_axis
@@ -55,7 +55,7 @@ def check_collision(pipes):
         if bird_rect.colliderect(pipe):
             hit_sound.play()
             return False
-    if bird_rect.top <= Oy or bird_rect.bottom >= y_screen:
+    if bird_rect.top <= Oy or bird_rect.bottom >= SCREEN_HEIGHT:
         hit_sound.play()
         return False
     return True
@@ -63,10 +63,10 @@ def check_collision(pipes):
 
 def score_display(game_state):
     font_color = (255, 255, 255)
-    x_score = x_screen / 2
-    y_score = y_screen / 6
-    x_high_score = x_screen / 2
-    y_high_score = y_screen / 10
+    x_score = SCREEN_WIDTH / 2
+    y_score = SCREEN_HEIGHT / 6
+    x_high_score = SCREEN_WIDTH / 2
+    y_high_score = SCREEN_HEIGHT / 10
     if game_state == 'main game':
         score_surface = game_font.render(str(int(score)), True, font_color)
         score_rect = score_surface.get_rect(center=(x_score, y_score))
@@ -92,9 +92,9 @@ pygame.init()
 
 
 # Set screen
-x_screen = 216
-y_screen = 384
-screen = pygame.display.set_mode((x_screen, y_screen))
+SCREEN_WIDTH = 216
+SCREEN_HEIGHT = 384
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 game_active = True
 
@@ -125,13 +125,12 @@ y_background = Oy
 floor = pygame.image.load('./assests/floor.png').convert()
 # floor =pygame.transform.scale2x(floor)
 x_floor = Ox
-# y_floor < x_screen
-y_floor = 300
+y_floor = SCREEN_HEIGHT * 3 / 4
 
 
 # Set bird
-x_bird = x_screen / 3
-y_bird = y_screen / 2
+x_bird = SCREEN_WIDTH / 3
+y_bird = SCREEN_HEIGHT / 2
 # Convert have pygame load img faster, convert_alpha remove black box
 bird_down = pygame.image.load('./assests/yellowbird-downflap.png').convert_alpha()
 bird_up = pygame.image.load('./assests/yellowbird-upflap.png').convert_alpha()
@@ -162,15 +161,15 @@ spawnpipe = pygame.USEREVENT
 # New pipe will appear in every 1200 ms
 spawnpipe_time = 1200
 pygame.time.set_timer(spawnpipe, spawnpipe_time)
-pipe_height = [y_screen/2, y_screen/1.5, y_screen/3]
+pipe_height = [SCREEN_HEIGHT/2, SCREEN_HEIGHT/1.5, SCREEN_HEIGHT/3]
 
 # Create finished background
 game_over_surface = (pygame.image.load('./assests/gameover.png')).convert_alpha()
-game_over_rect = game_over_surface.get_rect(center=(x_screen/2, y_screen/2))
+game_over_rect = game_over_surface.get_rect(center=(SCREEN_WIDTH/2, SCREEN_HEIGHT/2))
 
 # Create ready background
 game_ready_surface = pygame.image.load('./assests/message.png').convert_alpha()
-game_ready_rect = game_ready_surface.get_rect(center=(x_screen/2, y_screen/2))
+game_ready_rect = game_ready_surface.get_rect(center=(SCREEN_WIDTH/2, SCREEN_HEIGHT/2))
 
 # Create sound
 flap_sound = pygame.mixer.Sound('./sound/sfx_wing.wav')
@@ -209,13 +208,14 @@ while True:
     # Draw floor
     x_floor -= 1
     draw_floor(x_floor)
-    if x_floor <= -x_screen:
+    if x_floor <= -SCREEN_WIDTH:
         x_floor = Ox
 
     if game_active:
         # Draw bird
         bird_movement += gravity
         bird_rect.centery += bird_movement
+
         # Create a function to rotate bird
         rotated_bird = rotate_bird(bird)
         screen.blit(rotated_bird, bird_rect)
@@ -226,6 +226,8 @@ while True:
         # Draw pipes
         pipe_list = move_pipe(pipe_list)
         draw_pipe(pipe_list)
+
+        # Score
         score += 0.01
         score_display('main game')
         score_sound_countdown -= 1
@@ -241,3 +243,4 @@ while True:
 
     pygame.display.update()
     clock.tick(fps_number)
+    
