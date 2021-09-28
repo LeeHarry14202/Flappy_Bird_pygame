@@ -43,13 +43,40 @@ class BIRD(pygame.sprite.Sprite):
 
 class PIPE(pygame.sprite.Sprite):
     def __init__(self, image):
-        random_pipe_pos = random.choice(pipe_height)
+        pygame.sprite.Sprite.__init__(self)
+
+        self.pipe_height = [SCREEN_HEIGHT/2, SCREEN_HEIGHT/1.5, SCREEN_HEIGHT/3]
+        random_pipe_pos = random.choice(self.pipe_height)
         x_pipe = SCREEN_WIDTH
         y_pipe = random_pipe_pos
-        pygame.sprite.Sprite.__init__(self)
+
         self.image = image
         self.bottom_pipe = self.image.get_rect(midtop=(x_pipe, y_pipe))
         self.top_pipe = self.image.get_rect(midtop=(x_pipe, y_pipe - SCREEN_HEIGHT))
+        self.pipe_list = []
+
+    def create_pipe(self):
+        random_pipe_pos = random.choice(self.pipe_height)
+        x_pipe = SCREEN_WIDTH
+        y_pipe = random_pipe_pos
+        bottom_pipe = pipe_img.get_rect(midtop=(x_pipe, y_pipe))
+        top_pipe = pipe_img.get_rect(midtop=(x_pipe, y_pipe - SCREEN_HEIGHT))
+        return bottom_pipe, top_pipe
+
+    def move_pipe(self, pipes):
+        for pipe in pipes:
+            pipe.centerx -= 2
+        return pipes
+
+    def draw_pipe(self, pipes):
+        pipes = self.move_pipe(pipes)
+        for pipe in pipes:
+            if pipe.bottom >= SCREEN_HEIGHT * (9 / 10):
+                screen.blit(pipe_img, pipe)
+            else:
+                # Only flip y_axis
+                flip_pipe = pygame.transform.flip(pipe_img, False, True)
+                screen.blit(flip_pipe, pipe)
 
 
 pygame.init()
@@ -75,7 +102,6 @@ bird_list = [bird_mid]
 bird_index = 0
 bird = bird_list[bird_index]
 
-pipe_height = [SCREEN_HEIGHT/2, SCREEN_HEIGHT / 1.5]
 
 
 # Set floor location
@@ -86,6 +112,12 @@ y_floor = SCREEN_HEIGHT * 0.75
 world = World()
 bird = BIRD(bird)
 pipe = PIPE(pipe_img)
+pipe_list = pipe.pipe_list
+
+spawn_pipe = pygame.USEREVENT
+spawn_pipe_time = 1200
+pygame.time.set_timer(spawn_pipe, spawn_pipe_time)
+
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -94,7 +126,8 @@ while True:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 bird.bird_movement = -5
-
+        if event.type == spawn_pipe:
+            pipe_list.extend(pipe.create_pipe())
     # Draw background
     draw_back_ground()
 
@@ -108,7 +141,7 @@ while True:
     bird.draw_bird()
 
     # Draw pipe
-    # pipe.draw_pipe()
+    pipe.draw_pipe(pipe_list)
 
     pygame.display.update()
     clock.tick(fps_number)
